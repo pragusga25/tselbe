@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+model User {
+  id       String  @id @default(cuid())
+  username String  @unique
+  password String
+  name     String
+  email    String? @unique
+
+  role                        Role                @default(USER)
+  assignmentRequestRequesters AssignmentRequest[] @relation("requester")
+  assignmentRequestResponders AssignmentRequest[] @relation("responder")
+
+  principalUserId String? @unique
+  isApprover      Boolean @default(false)
+  isRoot          Boolean @default(false)
+
+  createdAt                       DateTime                @default(now())
+  updatedAt                       DateTime                @updatedAt
+  freezeTimes                     FreezeTime[]
+  assignmentUserRequestRequesters AssignmentUserRequest[] @relation("requester")
+  assignmentUserRequestResponders AssignmentUserRequest[] @relation("responder")
+  timeInHours                     TimeInHour[]
+}
+
+model IdentityInstance {
+  id              String @id @default(cuid())
+  instanceArn     String
+  identityStoreId String
+
+  schedulerTargetArn String?
+  schedulerRoleArn   String?
+}
+
+model AccountAssignment {
+  id String @id @default(cuid())
+
+  permissionSetArns String[]
+  principalId       String
+  principalType     PrincipalType @default(GROUP)
+  awsAccountId      String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  lastPushedAt      DateTime?
+
+  @@unique([principalId, awsAccountId, principalType])
+}
+
+model AssignmentRequest {
+  id          String @id @default(cuid())
+  requester   User   @relation("requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  requesterId String
+
+  responder   User?   @relation("responder", fields: [responderId], references: [id], onDelete: Cascade)
+  responderId String?
+
+  requestedAt DateTime  @default(now())
+  respondedAt DateTime?
+
+  permissionSetArns String[]
+  status            AssignmentRequestStatus @default(PENDING)
+  operation         AssignmentOperation     @default(ATTACH)
+
+  principalId   String
+  principalType PrincipalType @default(GROUP)
+  awsAccountId  String
+
+  note String?
+}
+
+model AssignmentUserRequest {
+  id          String @id @default(cuid())
+  requester   User   @relation("requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  requesterId String
+
+  responder   User?   @relation("responder", fields: [responderId], references: [id], onDelete: Cascade)
+  responderId String?
+
+  requestedAt DateTime  @default(now())
+  respondedAt DateTime?
+
+  permissionSetArn String
+  status           AssignmentRequestStatus @default(PENDING)
+
+  principalId     String
+  principalType   PrincipalType @default(USER)
+  awsAccountId    String
+  endAt           DateTime?
+  timeInHour      Int
+  isExecutedAtEnd Boolean       @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+model TimeInHour {
+  timeInHour Int      @id @unique
+  creatorId  String
+  creator    User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model FreezeTime {
+  id        String   @id @default(cuid())
+  startTime DateTime
+  endTime   DateTime
+  name      String   @unique
+
+  target            FreezeTimeTarget @default(ALL)
+  permissionSetArns String[]
+
+  creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId String
+
+  excludedPrincipals Json[]
+
+  isExecutedAtStart Boolean @default(false)
+  isExecutedAtEnd   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  message   String
+  createdAt DateTime @default(now())
+}
+
+enum FreezeTimeTarget {
+  USER
+  GROUP
+  ALL
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PrincipalType {
+  USER
+  GROUP
+}
+
+enum AssignmentRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum AssignmentOperation {
+  ATTACH
+  DETACH
+}

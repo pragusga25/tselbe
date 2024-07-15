@@ -1,0 +1,13 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["lambda:InvokeFunction"],
+      "Resource": [
+        "arn:aws:lambda:ap-southeast-3:587000135223:function:demo:*",
+        "arn:aws:lambda:ap-southeast-3:587000135223:function:demo"
+      ]
+    }
+  ]
+}
