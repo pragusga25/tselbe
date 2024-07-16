@@ -175,8 +175,7 @@ export const sendEmailToApprovers = async (data: SendEmailToApproversData) => {
 
   await sendEmail({
     Destination: {
-      // ToAddresses: approverEmails,
-      ToAddresses: ['pragusga.t@gmail.com'],
+      ToAddresses: approverEmails,
     },
     Message: {
       Subject: {
@@ -257,8 +256,7 @@ export const sendEmailToRequester = async (
 
   await sendEmail({
     Destination: {
-      // ToAddresses: [requesterEmail],
-      ToAddresses: ['pragusga.t@gmail.com'],
+      ToAddresses: [requesterEmail],
     },
     Message: {
       Subject: {
