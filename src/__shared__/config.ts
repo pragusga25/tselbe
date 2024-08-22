@@ -1,13 +1,13 @@
 import { config as c } from 'dotenv';
 import {
-  object,
-  parse,
-  optional,
-  string,
-  minLength,
-  picklist,
-  email,
   url,
+  email,
+  minLength,
+  object,
+  optional,
+  parse,
+  picklist,
+  string,
 } from 'valibot';
 c();
 
@@ -30,6 +30,7 @@ const envVarsSchema = object({
   AWS_REGION: optional(string(), 'ap-southeast-3'),
   NODE_ENV: optional(picklist(['development', 'production']), 'development'),
   AWS_SES_SENDER_EMAIL: optional(string([email()])),
+  MAX_RESULTS: optional(string(), '50'),
 });
 
 export const config = parse(envVarsSchema, process.env);
