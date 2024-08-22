@@ -2,7 +2,7 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
-Table User {
+Table users {
   id String [pk]
   username String [unique, not null]
   password String [not null]
@@ -47,9 +47,9 @@ Table AccountAssignment {
 
 Table AssignmentRequest {
   id String [pk]
-  requester User [not null]
+  requester users [not null]
   requesterId String [not null]
-  responder User
+  responder users
   responderId String
   requestedAt DateTime [default: `now()`, not null]
   respondedAt DateTime
@@ -64,9 +64,9 @@ Table AssignmentRequest {
 
 Table AssignmentUserRequest {
   id String [pk]
-  requester User [not null]
+  requester users [not null]
   requesterId String [not null]
-  responder User
+  responder users
   responderId String
   requestedAt DateTime [default: `now()`, not null]
   respondedAt DateTime
@@ -84,7 +84,7 @@ Table AssignmentUserRequest {
 Table TimeInHour {
   timeInHour Int [pk]
   creatorId String [not null]
-  creator User [not null]
+  creator users [not null]
   createdAt DateTime [default: `now()`, not null]
 }
 
@@ -95,7 +95,7 @@ Table FreezeTime {
   name String [unique, not null]
   target FreezeTimeTarget [not null, default: 'ALL']
   permissionSetArns String[] [not null]
-  creator User [not null]
+  creator users [not null]
   creatorId String [not null]
   excludedPrincipals Json[] [not null]
   isExecutedAtStart Boolean [not null, default: false]
@@ -147,14 +147,14 @@ Enum AssignmentOperation {
   DETACH
 }
 
-Ref: AssignmentRequest.requesterId > User.id [delete: Cascade]
+Ref: AssignmentRequest.requesterId > users.id [delete: Cascade]
 
-Ref: AssignmentRequest.responderId > User.id [delete: Cascade]
+Ref: AssignmentRequest.responderId > users.id [delete: Cascade]
 
-Ref: AssignmentUserRequest.requesterId > User.id [delete: Cascade]
+Ref: AssignmentUserRequest.requesterId > users.id [delete: Cascade]
 
-Ref: AssignmentUserRequest.responderId > User.id [delete: Cascade]
+Ref: AssignmentUserRequest.responderId > users.id [delete: Cascade]
 
-Ref: TimeInHour.creatorId > User.id [delete: Cascade]
+Ref: TimeInHour.creatorId > users.id [delete: Cascade]
 
-Ref: FreezeTime.creatorId > User.id [delete: Cascade]
+Ref: FreezeTime.creatorId > users.id [delete: Cascade]

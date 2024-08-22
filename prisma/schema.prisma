@@ -38,6 +38,8 @@ model User {
   assignmentUserRequestRequesters AssignmentUserRequest[] @relation("requester")
   assignmentUserRequestResponders AssignmentUserRequest[] @relation("responder")
   timeInHours                     TimeInHour[]
+
+  @@map("users")
 }
 
 model IdentityInstance {
