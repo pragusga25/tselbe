@@ -563,7 +563,7 @@ export const listAccounts = async () => {
   const accounts: Account[] = [];
   const { Accounts, NextToken } = await organizations.send(
     new ListAccountsCommand({
-      MaxResults: 10,
+      MaxResults: 20,
       // MaxResults: Number(config.MAX_RESULTS),
     })
   );
@@ -577,14 +577,14 @@ export const listAccounts = async () => {
     const { Accounts, NextToken } = await organizations.send(
       new ListAccountsCommand({
         // MaxResults: Number(config.MAX_RESULTS),
-        MaxResults: 10,
+        MaxResults: 20,
         NextToken: nextToken,
       })
     );
     if (!Accounts || Accounts.length === 0) break;
     nextToken = NextToken;
     accounts.push(...Accounts);
-    await sleep(500);
+    await sleep(1500);
   }
 
   return accounts.map((acc) => {
@@ -663,7 +663,7 @@ export const listAccountAssignmentsforPrincipal = async (
     if (!AccountAssignments || AccountAssignments.length === 0) break;
     nextToken = NextToken;
     accountAssignments.push(...AccountAssignments);
-    await sleep(500);
+    await sleep(1500);
   }
 
   const d = accountAssignments
