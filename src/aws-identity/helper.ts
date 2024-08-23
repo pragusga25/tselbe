@@ -584,7 +584,7 @@ export const listAccounts = async () => {
     if (!Accounts || Accounts.length === 0) break;
     nextToken = NextToken;
     accounts.push(...Accounts);
-    await sleep(1500);
+    await sleep(500);
   }
 
   return accounts.map((acc) => {
@@ -663,7 +663,7 @@ export const listAccountAssignmentsforPrincipal = async (
     if (!AccountAssignments || AccountAssignments.length === 0) break;
     nextToken = NextToken;
     accountAssignments.push(...AccountAssignments);
-    await sleep(1500);
+    await sleep(500);
   }
 
   const d = accountAssignments
@@ -1049,7 +1049,7 @@ export const listGroups = async (identityStoreId?: string | null) => {
     if (!Groups || Groups.length === 0) break;
     nextToken = NextToken;
     groups.push(...Groups);
-    await sleep(1500);
+    await sleep(500);
   }
 
   return groups.map((group) => ({
