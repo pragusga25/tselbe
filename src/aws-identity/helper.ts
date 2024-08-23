@@ -584,6 +584,7 @@ export const listAccounts = async () => {
     if (!Accounts || Accounts.length === 0) break;
     nextToken = NextToken;
     accounts.push(...Accounts);
+    await sleep(500);
   }
 
   return accounts.map((acc) => {
@@ -662,6 +663,7 @@ export const listAccountAssignmentsforPrincipal = async (
     if (!AccountAssignments || AccountAssignments.length === 0) break;
     nextToken = NextToken;
     accountAssignments.push(...AccountAssignments);
+    await sleep(500);
   }
 
   const d = accountAssignments
