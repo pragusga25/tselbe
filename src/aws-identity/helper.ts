@@ -1069,6 +1069,7 @@ export const listUsers = async (identityStoreId?: string | null) => {
   const { Users, NextToken } = await identityStore.send(
     new ListUsersCommand({
       IdentityStoreId: theIdentityStoreId,
+      MaxResults: Number(config.MAX_RESULTS),
     })
   );
 
@@ -1083,6 +1084,7 @@ export const listUsers = async (identityStoreId?: string | null) => {
       new ListUsersCommand({
         IdentityStoreId: theIdentityStoreId,
         NextToken: nextToken,
+        MaxResults: Number(config.MAX_RESULTS),
       })
     );
     if (!Users || Users.length === 0) break;
