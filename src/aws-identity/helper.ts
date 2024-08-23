@@ -563,8 +563,8 @@ export const listAccounts = async () => {
   const accounts: Account[] = [];
   const { Accounts, NextToken } = await organizations.send(
     new ListAccountsCommand({
-      // MaxResults: 9,
-      MaxResults: Number(config.MAX_RESULTS),
+      MaxResults: 10,
+      // MaxResults: Number(config.MAX_RESULTS),
     })
   );
   if (!Accounts || Accounts.length === 0) return [];
@@ -576,7 +576,8 @@ export const listAccounts = async () => {
   while (nextToken) {
     const { Accounts, NextToken } = await organizations.send(
       new ListAccountsCommand({
-        MaxResults: Number(config.MAX_RESULTS),
+        // MaxResults: Number(config.MAX_RESULTS),
+        MaxResults: 10,
         NextToken: nextToken,
       })
     );
