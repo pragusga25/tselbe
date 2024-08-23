@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
-  adminOnlyMiddleware,
   asyncErrorHandler,
+  rootOrApproverMiddleware,
   validationBodyMiddleware,
 } from '../../__middlewares__';
 import { AcceptAssignmentUserRequestSchema } from '../validations';
@@ -11,7 +11,7 @@ import { acceptAssignmentUserRequestService } from '../services/accept-assignmen
 export const acceptAssignmentUserRequestRouter = Router();
 acceptAssignmentUserRequestRouter.post(
   '/assignment-user-requests.accept',
-  adminOnlyMiddleware,
+  rootOrApproverMiddleware(),
   validationBodyMiddleware(AcceptAssignmentUserRequestSchema),
   asyncErrorHandler(async (req: IAuthRequest, res) => {
     const payload = req.body;
