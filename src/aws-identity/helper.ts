@@ -1391,17 +1391,24 @@ export const listAccountAssignmentsv2 = async (
     instanceArn?: string | null;
   } | null
 ) => {
-  const principalsPromise =
+  // const principalsPromise =
+  //   type === PrincipalType.GROUP
+  //     ? listGroups(opts?.identityStoreId)
+  //     : listUsers(opts?.identityStoreId);
+
+  // const awsAccountsPromise = listAccountsInMap();
+
+  // const [principals, awsAccounts] = await Promise.all([
+  //   principalsPromise,
+  //   awsAccountsPromise,
+  // ]);
+
+  const principals =
     type === PrincipalType.GROUP
-      ? listGroups(opts?.identityStoreId)
-      : listUsers(opts?.identityStoreId);
+      ? await listGroups(opts?.identityStoreId)
+      : await listUsers(opts?.identityStoreId);
 
-  const awsAccountsPromise = listAccountsInMap();
-
-  const [principals, awsAccounts] = await Promise.all([
-    principalsPromise,
-    awsAccountsPromise,
-  ]);
+  const awsAccounts = await listAccountsInMap();
 
   const data: Data = [];
 
@@ -1412,16 +1419,34 @@ export const listAccountAssignmentsv2 = async (
     principalsMap[principal.id] = principal;
   });
 
-  const accountAssignmentsPromises = principals.map((principal) =>
-    listAccountAssignmentsforPrincipal(
-      principal.id,
-      principal.principalType,
-      false,
-      opts?.instanceArn
-    )
-  );
+  const accountAssignments: {
+    accountId: string;
+    permissionSetArn: string;
+    principalId: string;
+    principalType: PrincipalType;
+  }[][] = [];
 
-  const accountAssignments = await Promise.all(accountAssignmentsPromises);
+  for (const principal of principals) {
+    accountAssignments.push(
+      await listAccountAssignmentsforPrincipal(
+        principal.id,
+        principal.principalType,
+        false,
+        opts?.instanceArn
+      )
+    );
+  }
+
+  // const accountAssignmentsPromises = principals.map((principal) =>
+  //   listAccountAssignmentsforPrincipal(
+  //     principal.id,
+  //     principal.principalType,
+  //     false,
+  //     opts?.instanceArn
+  //   )
+  // );
+
+  // const accountAssignments = await Promise.all(accountAssignmentsPromises);
 
   const uniquePermissionSetArns = new Set<string>();
 
