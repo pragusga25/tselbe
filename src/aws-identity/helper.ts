@@ -1049,7 +1049,7 @@ export const listGroups = async (identityStoreId?: string | null) => {
     if (!Groups || Groups.length === 0) break;
     nextToken = NextToken;
     groups.push(...Groups);
-    await sleep(500);
+    await sleep(1500);
   }
 
   return groups.map((group) => ({
