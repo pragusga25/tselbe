@@ -31,6 +31,7 @@ const envVarsSchema = object({
   NODE_ENV: optional(picklist(['development', 'production']), 'development'),
   AWS_SES_SENDER_EMAIL: optional(string([email()])),
   MAX_RESULTS: optional(string(), '50'),
+  REDIS_URI: optional(string()),
 });
 
 export const config = parse(envVarsSchema, process.env);

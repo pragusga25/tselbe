@@ -8,6 +8,7 @@ services:
     env_file:
       - .env
     depends_on:
+      - db
       - redis
     restart: unless-stopped
     ports:
@@ -23,6 +24,21 @@ services:
       - '6379:6379'
     volumes:
       - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - tselbe-network
+
+  db:
+    container_name: tsel-db
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
     restart: unless-stopped
     networks:
       - tselbe-network

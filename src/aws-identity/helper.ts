@@ -9,8 +9,10 @@ import {
   DescribeGroupCommand,
   DescribeUserCommand,
   type Group,
+  GroupMembership,
   IdentitystoreClient,
   ListGroupMembershipsCommand,
+  ListGroupMembershipsCommandOutput,
   ListGroupMembershipsForMemberCommand,
   ListGroupsCommand,
   ListUsersCommand,
@@ -54,7 +56,7 @@ import {
 import { config } from '../__shared__/config';
 import { sendEmail } from '../__shared__/mailer';
 import { getLocaleDateString, sleep, toJakartaTime } from '../__shared__/utils';
-import { db } from '../db';
+import { db, getValueRd, setValueRd } from '../db';
 import {
   IdentityInstanceNotFoundError,
   OperationFailedError,
@@ -494,6 +496,90 @@ export const listGroupsInUsers = async (identityStoreId?: string | null) => {
   return usersGroupsMap;
 };
 
+export const getGroupMemberships = async (
+  identityStoreId: string,
+  groupId: string
+) => {
+  const { GroupMemberships, NextToken } = await identityStore.send(
+    new ListGroupMembershipsCommand({
+      GroupId: groupId,
+      IdentityStoreId: identityStoreId,
+      MaxResults: Number(config.MAX_RESULTS),
+    })
+  );
+
+  if (!GroupMemberships || !GroupMemberships.length) return [];
+
+  const result: GroupMembership[] = [];
+  result.push(...GroupMemberships);
+
+  let nextToken: string | undefined = undefined;
+  nextToken = NextToken;
+
+  while (nextToken) {
+    const { GroupMemberships, NextToken } = await identityStore.send(
+      new ListGroupMembershipsCommand({
+        GroupId: groupId,
+        IdentityStoreId: identityStoreId,
+        MaxResults: Number(config.MAX_RESULTS),
+        NextToken: nextToken,
+      })
+    );
+    if (!GroupMemberships || !GroupMemberships.length) break;
+    nextToken = NextToken;
+    result.push(...GroupMemberships);
+    await sleep(500);
+  }
+
+  return result;
+};
+
+export const listGroupsWithDetail = async (
+  identityStoreId: string,
+  withMemberships = false
+): Promise<
+  {
+    memberships: {
+      userDisplayName: string;
+      userId: string;
+      membershipId: string;
+    }[];
+    id: string;
+    displayName: string | null;
+    description: string | null;
+    identityStoreId: string | null;
+    principalType: 'GROUP';
+  }[]
+> => {
+  const groups = await listGroups(identityStoreId);
+  if (!withMemberships) {
+    return groups.map((g) => ({ ...g, memberships: [] }));
+  }
+
+  const groupMems: GroupMembership[] = [];
+
+  for (const group of groups) {
+    const groupMem = await getGroupMemberships(identityStoreId, group.id);
+    groupMems.push(...groupMem);
+  }
+
+  const users = await listUsersInMap(identityStoreId);
+
+  return groups.map((g) => {
+    const groupMemsFiltered = groupMems.filter((mem) => mem.GroupId === g.id);
+    const memberships = groupMemsFiltered.map((mem) => {
+      const user = users.get(mem.MemberId?.UserId ?? '');
+      return {
+        userDisplayName: user?.displayName ?? '',
+        userId: mem.MemberId?.UserId ?? '',
+        membershipId: mem.MembershipId ?? '',
+      };
+    });
+
+    return { ...g, memberships };
+  });
+};
+
 export const listUsersInGroups = async (identityStoreId?: string | null) => {
   const [groupsInMap, usersInMap] = await Promise.all([
     listGroupsInMap(identityStoreId),
@@ -560,6 +646,16 @@ export const getAccountId = async () => {
 };
 
 export const listAccounts = async () => {
+  const fromRedis = await getValueRd('accounts');
+  if (fromRedis) {
+    return JSON.parse(fromRedis) as {
+      id: string;
+      name: string;
+      email: string;
+      arn: string;
+    }[];
+  }
+
   const accounts: Account[] = [];
   const { Accounts, NextToken } = await organizations.send(
     new ListAccountsCommand({
@@ -587,7 +683,7 @@ export const listAccounts = async () => {
     await sleep(500);
   }
 
-  return accounts.map((acc) => {
+  const res = accounts.map((acc) => {
     return {
       id: acc.Id ?? '',
       name: acc.Name ?? '',
@@ -595,6 +691,10 @@ export const listAccounts = async () => {
       arn: acc.Arn,
     };
   });
+
+  setValueRd('accounts', JSON.stringify(res));
+
+  return res;
 };
 
 type ListAccountsReturnedOne = Awaited<ReturnType<typeof listAccounts>>[0];
@@ -626,7 +726,8 @@ export const listAccountAssignmentsforPrincipal = async (
   principalId: string,
   principalType: PrincipalType = PrincipalType.GROUP,
   strict = false,
-  instanceArn?: string | null
+  instanceArn?: string | null,
+  sleepTime = 500
 ) => {
   const accountAssignments: AccountAssignmentForPrincipal[] = [];
 
@@ -663,7 +764,7 @@ export const listAccountAssignmentsforPrincipal = async (
     if (!AccountAssignments || AccountAssignments.length === 0) break;
     nextToken = NextToken;
     accountAssignments.push(...AccountAssignments);
-    await sleep(500);
+    await sleep(sleepTime);
   }
 
   const d = accountAssignments
@@ -1022,6 +1123,18 @@ export const listAccountAssignments = async (): Promise<
 };
 
 export const listGroups = async (identityStoreId?: string | null) => {
+  const fromRedis = await getValueRd('groups');
+
+  if (fromRedis) {
+    return JSON.parse(fromRedis) as {
+      id: string;
+      displayName: string | null;
+      description: string | null;
+      identityStoreId: string | null;
+      principalType: 'GROUP';
+    }[];
+  }
+
   const theIdentityStoreId =
     identityStoreId ?? (await getIdentityInstanceOrThrow()).identityStoreId;
 
@@ -1052,16 +1165,36 @@ export const listGroups = async (identityStoreId?: string | null) => {
     await sleep(500);
   }
 
-  return groups.map((group) => ({
+  const result = groups.map((group) => ({
     id: group.GroupId ?? '-',
     displayName: group.DisplayName ?? null,
     description: group.Description ?? null,
     identityStoreId: group.IdentityStoreId ?? null,
     principalType: PrincipalType.GROUP,
   }));
+
+  setValueRd('groups', JSON.stringify(result));
+
+  return result;
 };
 
 export const listUsers = async (identityStoreId?: string | null) => {
+  const fromRedis = await getValueRd('users');
+  if (fromRedis) {
+    return JSON.parse(fromRedis) as {
+      id: string;
+      displayName: string | null;
+      name: {
+        familyName: string | null;
+        givenName: string | null;
+      } | null;
+      identityStoreId: string | null;
+      emails: (string | undefined)[];
+      username: string | null;
+      principalType: 'USER';
+    }[];
+  }
+
   const theIdentityStoreId =
     identityStoreId ?? (await getIdentityInstanceOrThrow()).identityStoreId;
 
@@ -1093,7 +1226,7 @@ export const listUsers = async (identityStoreId?: string | null) => {
     await sleep(500);
   }
 
-  return users.map((user) => ({
+  const result = users.map((user) => ({
     id: user.UserId ?? '-',
     displayName: user.DisplayName ?? null,
     name: user.Name
@@ -1107,6 +1240,10 @@ export const listUsers = async (identityStoreId?: string | null) => {
     username: user.UserName ?? null,
     principalType: PrincipalType.USER,
   }));
+
+  setValueRd('users', JSON.stringify(result), 60 * 3);
+
+  return result;
 };
 
 export const listPrincipals = async (identityStoreId?: string | null) => {
@@ -1151,7 +1288,10 @@ export const listUsersInMap = async (identityStoreId?: string | null) => {
 };
 
 export const listPermissionSets = async (instanceArn?: string | null) => {
-  // const { instanceArn } = await getIdentityInstanceOrThrow();
+  const fromRedis = await getValueRd('permissionSets');
+  if (fromRedis) {
+    return JSON.parse(fromRedis) as string[];
+  }
   const theInstanceArn =
     instanceArn ?? (await getIdentityInstanceOrThrow()).instanceArn;
 
@@ -1178,6 +1318,8 @@ export const listPermissionSets = async (instanceArn?: string | null) => {
     nextToken = NextToken;
     permissionSets.push(...PermissionSets);
   }
+
+  setValueRd('permissionSets', JSON.stringify(permissionSets), 60 * 2);
 
   return permissionSets;
 };

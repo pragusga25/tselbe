@@ -1,10 +1,26 @@
-FROM node:lts-alpine
-WORKDIR /usr/src/app
-COPY package* ./
-RUN npm i
-COPY . .
-RUN npx prisma generate
-RUN npm run build
-EXPOSE 8080
+# Base image
+FROM node:18-alpine
 
-CMD ["npm", "start"]
+# Create app directory
+WORKDIR /usr/src/app
+
+# Install app dependencies
+COPY package*.json ./
+RUN npm ci
+
+# Bundle app source
+COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Build TypeScript
+RUN npm run build
+
+# Expose port
+EXPOSE 3000
+
+# Make start script executable
+RUN chmod +x start.sh
+
+CMD ["./start.sh"]

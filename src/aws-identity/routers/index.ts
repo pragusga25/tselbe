@@ -49,7 +49,7 @@ import { deleteAssignmentUserRequestRouter } from './delete-assignment-user-requ
 import { acceptAssignmentUserRequestRouter } from './accept-assignment-user-request.router';
 import { rejectAssignmentUserRequestRouter } from './reject-assignment-user-request.router';
 import { schedulerDetachAssignmentUserRequestRouter } from './scheduler-detach-assignment-user-request.router';
-
+import { listMyAssignmentUserRequestsRouter } from './list-my-assignment-user-requests.router';
 export const awsIdentityRouters = [
   listGroupPrincipalsRouter,
   listInstancesRouter,
@@ -102,4 +102,5 @@ export const awsIdentityRouters = [
   acceptAssignmentUserRequestRouter,
   rejectAssignmentUserRequestRouter,
   schedulerDetachAssignmentUserRequestRouter,
+  listMyAssignmentUserRequestsRouter,
 ];

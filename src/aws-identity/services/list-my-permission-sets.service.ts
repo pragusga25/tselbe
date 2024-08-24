@@ -21,6 +21,10 @@ type Result = {
   principalDisplayName: string | null;
 }[];
 
+type ReturendAss = Awaited<
+  ReturnType<typeof listAccountAssignmentsforPrincipal>
+>;
+
 export const listMyPermissionSetsService = async (userId: string) => {
   const user = await db.user.findUnique({
     where: {
@@ -36,26 +40,31 @@ export const listMyPermissionSetsService = async (userId: string) => {
 
   const memberships = await getUserMemberships(user.principalUserId);
 
-  const groupAssignmentsPromise = memberships.map((membership) => {
-    return listAccountAssignmentsforPrincipal(
-      membership.groupId,
-      PrincipalType.GROUP,
-      true,
-      identityInstance?.instanceArn
-    );
-  });
+  const groupAssignments: ReturendAss[] = [];
 
-  // include my self
-  groupAssignmentsPromise.push(
-    listAccountAssignmentsforPrincipal(
+  for (const membership of memberships) {
+    groupAssignments.push(
+      await listAccountAssignmentsforPrincipal(
+        membership.groupId,
+        PrincipalType.GROUP,
+        true,
+        identityInstance?.instanceArn,
+        300
+      )
+    );
+  }
+
+  groupAssignments.push(
+    await listAccountAssignmentsforPrincipal(
       user.principalUserId,
       PrincipalType.USER,
       true,
-      identityInstance?.instanceArn
+      identityInstance?.instanceArn,
+      0
     )
   );
 
-  const awsAccountsMapPromise = listAccountsInMap();
+  const awsAccountsMap = await listAccountsInMap();
   const permissionSetsMapPromise = describeAllPermissionSetsInMap(
     identityInstance?.instanceArn
   );
@@ -64,13 +73,10 @@ export const listMyPermissionSetsService = async (userId: string) => {
     identityInstance?.identityStoreId
   );
 
-  const [groupAssignments, awsAccountsMap, permissionSetsMap, groupDetails] =
-    await Promise.all([
-      Promise.all(groupAssignmentsPromise),
-      awsAccountsMapPromise,
-      permissionSetsMapPromise,
-      groupDetailsPromise,
-    ]);
+  const [permissionSetsMap, groupDetails] = await Promise.all([
+    permissionSetsMapPromise,
+    groupDetailsPromise,
+  ]);
 
   const permissionSetsInPrincipalMap: Record<
     string,
