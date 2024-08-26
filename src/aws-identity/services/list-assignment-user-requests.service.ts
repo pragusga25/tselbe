@@ -20,7 +20,7 @@ export const listAssignmentUserRequestsService = async (
     ]);
   }
 
-  if (!u.isRoot || !u.isApprover) {
+  if (!u.isRoot && !u.isApprover) {
     throw new HttpError(403, 'auth/forbidden', [
       'You are not root or approver',
     ]);
