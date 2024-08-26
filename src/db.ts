@@ -27,4 +27,16 @@ export const getValueRd = async (key: string) => {
   }
 };
 
+export const delValueRd = async (key: string) => {
+  if (!config.REDIS_URI) return;
+  try {
+    const redis = new Redis(config.REDIS_URI);
+    await redis.del(key);
+    redis.disconnect();
+    console.log(`Key: ${key} deleted from Redis`);
+  } catch (e) {
+    console.log('Error in delValueRd: ', e);
+  }
+};
+
 export const db = new PrismaClient();

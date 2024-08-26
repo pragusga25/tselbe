@@ -12,7 +12,6 @@ import {
   GroupMembership,
   IdentitystoreClient,
   ListGroupMembershipsCommand,
-  ListGroupMembershipsCommandOutput,
   ListGroupMembershipsForMemberCommand,
   ListGroupsCommand,
   ListUsersCommand,
@@ -56,7 +55,7 @@ import {
 import { config } from '../__shared__/config';
 import { sendEmail } from '../__shared__/mailer';
 import { getLocaleDateString, sleep, toJakartaTime } from '../__shared__/utils';
-import { db, getValueRd, setValueRd } from '../db';
+import { db, delValueRd, getValueRd, setValueRd } from '../db';
 import {
   IdentityInstanceNotFoundError,
   OperationFailedError,
@@ -1824,6 +1823,7 @@ export const createPrincipal = async ({
   if (type === PrincipalType.GROUP) {
     const { GroupId } = await identityStore.send(new CreateGroupCommand(input));
     id = GroupId;
+    await delValueRd('groups');
   } else {
     const { UserId } = await identityStore.send(
       new CreateUserCommand({
@@ -1836,6 +1836,7 @@ export const createPrincipal = async ({
       })
     );
     id = UserId;
+    await delValueRd('users');
   }
 
   return {
@@ -1853,6 +1854,8 @@ export const createGroupPrincipal = async (data: CreateGroupPrincipalData) => {
       Description: data.description,
     })
   );
+
+  await delValueRd('groups');
 
   return {
     id: GroupId,
@@ -1874,6 +1877,8 @@ export const createUserPrincipal = async (data: CreateUserPrincipalData) => {
     })
   );
 
+  await delValueRd('users');
+
   return {
     id: UserId,
   };
@@ -1892,6 +1897,7 @@ export const deletePrincipal = async ({ id, type }: DeletePrincipalData) => {
         GroupId: id,
       })
     );
+    await delValueRd('groups');
   } else {
     await identityStore.send(
       new DeleteUserCommand({
@@ -1899,6 +1905,7 @@ export const deletePrincipal = async ({ id, type }: DeletePrincipalData) => {
         UserId: id,
       })
     );
+    await delValueRd('users');
   }
 };
 
@@ -1925,6 +1932,7 @@ export const updatePrincipal = async ({
         ...input,
       })
     );
+    await delValueRd('groups');
   } else {
     await identityStore.send(
       new UpdateUserCommand({
@@ -1932,6 +1940,7 @@ export const updatePrincipal = async ({
         ...input,
       })
     );
+    await delValueRd('users');
   }
 };
 
