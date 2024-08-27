@@ -1161,7 +1161,7 @@ export const listGroups = async (identityStoreId?: string | null) => {
     if (!Groups || Groups.length === 0) break;
     nextToken = NextToken;
     groups.push(...Groups);
-    await sleep(500);
+    await sleep(800);
   }
 
   const result = groups.map((group) => ({
@@ -1222,7 +1222,7 @@ export const listUsers = async (identityStoreId?: string | null) => {
     if (!Users || Users.length === 0) break;
     nextToken = NextToken;
     users.push(...Users);
-    await sleep(500);
+    await sleep(800);
   }
 
   const result = users.map((user) => ({
