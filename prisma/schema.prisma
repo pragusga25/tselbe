@@ -84,7 +84,8 @@ model AssignmentRequest {
   principalType PrincipalType @default(GROUP)
   awsAccountId  String
 
-  note String?
+  note          String? @map("requester_note")
+  responderNote String? @map("responder_note")
 }
 
 model AssignmentUserRequest {
@@ -100,6 +101,8 @@ model AssignmentUserRequest {
 
   permissionSetArn String
   status           AssignmentRequestStatus @default(PENDING)
+  note             String?                 @map("requester_note")
+  responderNote    String?                 @map("responder_note")
 
   principalId     String
   principalType   PrincipalType @default(USER)

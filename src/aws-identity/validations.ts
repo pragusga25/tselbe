@@ -129,9 +129,21 @@ export const AcceptAssignmentRequestsSchema = object({
   //   Object.values(AssignmentOperation),
   //   'Operation must be either ATTACH or DETACH.'
   // ),
+  responderNote: optional(
+    string('Note must be a string.', [
+      minLength(1, 'Please enter a note.'),
+      maxLength(32, 'Note must be less than 32 characters.'),
+    ])
+  ),
 });
 export const RejectAssignmentRequestsSchema = object({
   ids: IdsSchema,
+  responderNote: optional(
+    string('Note must be a string.', [
+      minLength(1, 'Please enter a note.'),
+      maxLength(32, 'Note must be less than 32 characters.'),
+    ])
+  ),
 });
 
 export const PullAssignmentSchema = object({
@@ -253,6 +265,12 @@ export const CreateAssignmentUserRequestSchema = object({
   timeInHour: TimeInHourSchema,
   awsAccountId: AwsAccountIdSchema,
   permissionSetArn: PermissionSetArnSchema,
+  note: optional(
+    string('Note must be a string.', [
+      minLength(1, 'Please enter a note.'),
+      maxLength(32, 'Note must be less than 32 characters.'),
+    ])
+  ),
 });
 
 export type CreateAssignmentUserRequestData = Output<
@@ -261,6 +279,12 @@ export type CreateAssignmentUserRequestData = Output<
 
 export const AcceptAssignmentUserRequestSchema = object({
   id: string([minLength(1, 'Please enter an id.')]),
+  responderNote: optional(
+    string('Note must be a string.', [
+      minLength(1, 'Please enter a note.'),
+      maxLength(32, 'Note must be less than 32 characters.'),
+    ])
+  ),
 });
 export const RejectAssignmentUserRequestSchema =
   AcceptAssignmentUserRequestSchema;

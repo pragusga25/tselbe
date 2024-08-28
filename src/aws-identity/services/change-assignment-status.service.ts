@@ -24,6 +24,7 @@ export const changeAssignmentStatusService = async (
   responderId: string,
   id: string,
   status: AssignmentRequestStatus,
+  responderNote?: string,
   cb?: (
     data: Data,
     trx: Trx,
@@ -80,6 +81,7 @@ export const changeAssignmentStatusService = async (
         responderId,
         status: status,
         respondedAt: new Date(),
+        responderNote,
       },
       select: {
         permissionSetArns: true,

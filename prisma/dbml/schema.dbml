@@ -60,6 +60,7 @@ Table AssignmentRequest {
   principalType PrincipalType [not null, default: 'GROUP']
   awsAccountId String [not null]
   note String
+  responderNote String
 }
 
 Table AssignmentUserRequest {
@@ -72,6 +73,8 @@ Table AssignmentUserRequest {
   respondedAt DateTime
   permissionSetArn String [not null]
   status AssignmentRequestStatus [not null, default: 'PENDING']
+  note String
+  responderNote String
   principalId String [not null]
   principalType PrincipalType [not null, default: 'USER']
   awsAccountId String [not null]

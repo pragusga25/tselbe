@@ -14,6 +14,7 @@ export const rejectAssignmentUserRequestService = async (
     data: {
       status: 'REJECTED',
       responderId,
+      responderNote: data.responderNote,
     },
   });
 

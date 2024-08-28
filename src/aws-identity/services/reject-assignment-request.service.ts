@@ -3,11 +3,13 @@ import { changeAssignmentStatusService } from './change-assignment-status.servic
 
 export const rejectAssignmentRequestService = async (
   responderId: string,
-  id: string
+  id: string,
+  responderNote?: string
 ) => {
   await changeAssignmentStatusService(
     responderId,
     id,
-    AssignmentRequestStatus.REJECTED
+    AssignmentRequestStatus.REJECTED,
+    responderNote
   );
 };

@@ -20,6 +20,7 @@ export const listMyAssignmentRequestsService = async (userId: string) => {
       awsAccountId: true,
       principalId: true,
       principalType: true,
+      responderNote: true,
     },
     where: {
       requesterId: userId,

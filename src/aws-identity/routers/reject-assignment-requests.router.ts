@@ -16,7 +16,9 @@ rejectAssignmentRequestsRouter.post(
     const { ids } = req.body;
 
     await Promise.all(
-      ids.map((id: string) => rejectAssignmentRequestService(req.user!.id, id))
+      ids.map((id: string) =>
+        rejectAssignmentRequestService(req.user!.id, id, req.body.responderNote)
+      )
     );
 
     res.status(200).send({

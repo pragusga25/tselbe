@@ -8,12 +8,14 @@ import { changeAssignmentStatusService } from './change-assignment-status.servic
 
 export const acceptAssignmentRequestService = async (
   responderId: string,
-  id: string
+  id: string,
+  responderNote?: string
 ) => {
   await changeAssignmentStatusService(
     responderId,
     id,
     AssignmentRequestStatus.ACCEPTED,
+    responderNote,
     async ({ permissionSetArns: psa, ...rest }, trx, identity) => {
       const permissionSetArnssSet = await listPermissionSetArnsInSet(
         identity?.instanceArn

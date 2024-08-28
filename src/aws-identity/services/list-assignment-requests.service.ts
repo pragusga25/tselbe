@@ -14,6 +14,7 @@ export const listAssignmentRequestsService = async () => {
       principalType: true,
       permissionSetArns: true,
       awsAccountId: true,
+      responderNote: true,
       requester: {
         select: {
           name: true,

@@ -51,6 +51,7 @@ export const acceptAssignmentUserRequestService = async (
       status: 'ACCEPTED',
       responderId,
       endAt,
+      responderNote: data.responderNote,
     },
   });
 

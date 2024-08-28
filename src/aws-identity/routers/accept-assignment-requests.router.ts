@@ -16,7 +16,9 @@ acceptAssignmentRequestsRouter.post(
   asyncErrorHandler(async (req: IAuthRequest, res) => {
     const { ids } = req.body;
     await Promise.all(
-      ids.map((id: string) => acceptAssignmentRequestService(req.user!.id, id))
+      ids.map((id: string) =>
+        acceptAssignmentRequestService(req.user!.id, id, req.body.responderNote)
+      )
     );
 
     res.status(200).send({
