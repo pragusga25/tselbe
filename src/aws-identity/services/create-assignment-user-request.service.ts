@@ -54,13 +54,22 @@ export const createAssignmentUserRequestService = async (
     },
     select: {
       email: true,
+      username: true,
     },
   });
 
   await sendEmailToApprovers({
     approverEmails: approvers
-      .filter((app) => !!app.email)
-      .map((approver) => approver.email) as string[],
+      .filter(({ email, username }) => {
+        if (email && email.includes('@')) return true;
+        if (username.includes('@')) return true;
+        return false;
+      })
+      .map((approver) => {
+        if (approver.email && approver.email.includes('@'))
+          return approver.email;
+        return approver.username;
+      }) as string[],
     groupName: me?.name ?? 'Unknown User',
     operation: AssignmentOperation.ATTACH,
     permissionSetNames: [ps?.name ?? ''],

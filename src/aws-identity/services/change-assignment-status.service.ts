@@ -99,6 +99,7 @@ export const changeAssignmentStatusService = async (
           select: {
             name: true,
             email: true,
+            username: true,
           },
         },
       },
@@ -127,15 +128,23 @@ export const changeAssignmentStatusService = async (
 
     await createLog(logMessage, trx);
 
-    await sendEmailToRequester({
-      approverName: responderName,
-      groupName,
-      operation: res.operation,
-      permissionSetNames: permissionSetsName,
-      requesterEmail: res.requester.email ?? '',
-      requesterName,
-      status,
-    }).catch(console.error);
+    let requesterEmail = res.requester.email;
+    if (!requesterEmail || !requesterEmail.includes('@')) {
+      if (res.requester.username.includes('@')) {
+        requesterEmail = res.requester.username;
+      }
+    }
+
+    if (requesterEmail)
+      await sendEmailToRequester({
+        approverName: responderName,
+        groupName,
+        operation: res.operation,
+        permissionSetNames: permissionSetsName,
+        requesterEmail,
+        requesterName,
+        status,
+      }).catch(console.error);
 
     return res;
   });

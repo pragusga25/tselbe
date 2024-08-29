@@ -28,6 +28,7 @@ export const rejectAssignmentUserRequestService = async (
         select: {
           email: true,
           name: true,
+          username: true,
         },
       },
 
@@ -43,12 +44,21 @@ export const rejectAssignmentUserRequestService = async (
   const ps = await describePermissionSet(res?.permissionSetArn ?? '');
 
   if (res && ps) {
+    let requesterEmail = res.requester.email;
+    if (!requesterEmail || !requesterEmail.includes('@')) {
+      if (res.requester.username.includes('@')) {
+        requesterEmail = res.requester.username;
+      } else {
+        return;
+      }
+    }
+
     await sendEmailToRequester({
       approverName: res.responder?.name ?? '',
       groupName: res.requester?.name ?? '',
       operation: AssignmentOperation.ATTACH,
       permissionSetNames: [ps.name ?? ''],
-      requesterEmail: res.requester.email ?? '',
+      requesterEmail,
       status: res.status,
       requesterName: res.requester.name ?? '',
     }).catch(console.error);
