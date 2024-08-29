@@ -188,7 +188,9 @@ export const sendEmailToApprovers = async (data: SendEmailToApproversData) => {
         },
       },
     },
-  }).catch();
+  }).catch((err) => {
+    console.error('ERROR SEND EMAIL TO APPROVERS: ', err);
+  });
 };
 
 type SendEmailToApproverRequester = {
@@ -269,7 +271,9 @@ export const sendEmailToRequester = async (
         },
       },
     },
-  }).catch();
+  }).catch((err) => {
+    console.error('ERROR SEND EMAIL TO REQUESTER: ', err);
+  });
 };
 
 export const deleteSchedule = async (name: string) => {
