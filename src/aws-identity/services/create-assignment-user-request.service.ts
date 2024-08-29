@@ -43,7 +43,14 @@ export const createAssignmentUserRequestService = async (
 
   const approvers = await db.user.findMany({
     where: {
-      isApprover: true,
+      OR: [
+        {
+          isApprover: true,
+        },
+        {
+          isRoot: true,
+        },
+      ],
     },
     select: {
       email: true,
